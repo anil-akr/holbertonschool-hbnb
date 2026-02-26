@@ -79,3 +79,55 @@ from app.persistence.repository import repository
 
         place.update(data)
         return place
+
+from app.models.review import Review
+
+
+    def create_review(self, data):
+        user = repository.get("User", data.get("user_id"))
+        place = repository.get("Place", data.get("place_id"))
+
+        if not user or not place:
+            return None
+
+        review = Review(
+            text=data["text"],
+            user=user,
+            place=place
+        )
+
+        place.reviews.append(review)
+        repository.add("Review", review)
+
+        return review
+
+
+    def get_review(self, review_id):
+        return repository.get("Review", review_id)
+
+
+    def get_all_reviews(self):
+        return repository.get_all("Review")
+
+
+    def update_review(self, review_id, data):
+        review = repository.get("Review", review_id)
+        if not review:
+            return None
+
+        if "text" in data and not data["text"].strip():
+            raise ValueError("Review text cannot be empty")
+
+        review.update(data)
+        return review
+
+
+    def delete_review(self, review_id):
+        review = repository.get("Review", review_id)
+        if not review:
+            return None
+
+        review.place.reviews.remove(review)
+        repository.delete("Review", review_id)
+
+        return True
