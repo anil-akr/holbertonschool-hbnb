@@ -1,54 +1,26 @@
-from abc import ABC, abstractmethod
-
-
-class Repository(ABC):
-    @abstractmethod
-    def add(self, obj):
-        pass
-
-    @abstractmethod
-    def get(self, obj_id):
-        pass
-
-    @abstractmethod
-    def get_all(self):
-        pass
-
-    @abstractmethod
-    def update(self, obj_id, data):
-        pass
-
-    @abstractmethod
-    def delete(self, obj_id):
-        pass
-
-    @abstractmethod
-    def get_by_attribute(self, attr_name, attr_value):
-        pass
-
-
 class InMemoryRepository:
     def __init__(self):
-        self._storage = {
+        self.storage = {
             "User": {},
-            "Place": {},
-            "Review": {},
-            "Amenity": {}
+            "Amenity": {},
+            "Place": {}
         }
 
     def add(self, obj_type, obj):
-        self._storage[obj_type][obj.id] = obj
+        self.storage[obj_type][obj.id] = obj
 
     def get(self, obj_type, obj_id):
-        return self._storage[obj_type].get(obj_id)
+        return self.storage[obj_type].get(obj_id)
 
     def get_all(self, obj_type):
-        return list(self._storage[obj_type].values())
-
-    def update(self, obj_type, obj_id, data):
-        obj = self.get(obj_type, obj_id)
-        if obj:
-            obj.update(data)
+        return list(self.storage[obj_type].values())
 
     def delete(self, obj_type, obj_id):
-        return self._storage[obj_type].pop(obj_id, None)
+        if obj_id in self.storage[obj_type]:
+            del self.storage[obj_type][obj_id]
+            return True
+        return False
+
+
+# Instance globale utilisée par le facade
+repository = InMemoryRepository()

@@ -5,9 +5,6 @@ from app.services.facade import HBnBFacade
 api = Namespace('places', description='Place operations')
 facade = HBnBFacade()
 
-
-# ----------- MODELS (Swagger) -----------
-
 place_input_model = api.model('PlaceInput', {
     'title': fields.String(required=True),
     'price': fields.Float(required=True),
@@ -26,15 +23,12 @@ place_output_model = api.model('PlaceOutput', {
 })
 
 
-# ----------- ROUTES -----------
-
 @api.route('/')
 class PlaceList(Resource):
 
     @api.expect(place_input_model)
     @api.marshal_with(place_output_model, code=201)
     def post(self):
-        """Create a new place"""
         data = request.json
         try:
             place = facade.create_place(data)
@@ -44,7 +38,6 @@ class PlaceList(Resource):
 
     @api.marshal_list_with(place_output_model)
     def get(self):
-        """Get all places"""
         places = facade.get_all_places()
         return [p.to_dict() for p in places], 200
 
@@ -54,7 +47,6 @@ class PlaceResource(Resource):
 
     @api.marshal_with(place_output_model)
     def get(self, place_id):
-        """Get one place"""
         place = facade.get_place(place_id)
         if not place:
             api.abort(404, "Place not found")
@@ -63,7 +55,6 @@ class PlaceResource(Resource):
     @api.expect(place_input_model)
     @api.marshal_with(place_output_model)
     def put(self, place_id):
-        """Update a place"""
         data = request.json
         try:
             place = facade.update_place(place_id, data)

@@ -1,24 +1,30 @@
 from app.models.user import User
+from app.models.amenity import Amenity
+from app.models.place import Place
 from app.persistence.repository import repository
 
 
 class HBnBFacade:
 
-    # CREATE
+    # ======================
+    # USER METHODS
+    # ======================
+
     def create_user(self, data):
-        user = User(**data)
+        user = User(
+            email=data["email"],
+            first_name=data["first_name"],
+            last_name=data["last_name"]
+        )
         repository.add("User", user)
         return user
 
-    # GET ONE
     def get_user(self, user_id):
         return repository.get("User", user_id)
 
-    # GET ALL
     def get_all_users(self):
         return repository.get_all("User")
 
-    # UPDATE
     def update_user(self, user_id, data):
         user = repository.get("User", user_id)
         if not user:
@@ -27,107 +33,78 @@ class HBnBFacade:
         user.update(data)
         return user
 
-from app.models.place import Place
-from app.persistence.repository import repository
 
+    # ======================
+    # AMENITY METHODS
+    # ======================
 
-    def create_place(self, data):
-        owner = repository.get("User", data.get("owner_id"))
-        if not owner:
+    def create_amenity(self, data):
+        amenity = Amenity(name=data["name"])
+        repository.add("Amenity", amenity)
+        return amenity
+
+    def get_amenity(self, amenity_id):
+        return repository.get("Amenity", amenity_id)
+
+    def get_all_amenities(self):
+        return repository.get_all("Amenity")
+
+    def update_amenity(self, amenity_id, data):
+        amenity = repository.get("Amenity", amenity_id)
+        if not amenity:
             return None
 
-        amenities = []
-        for amenity_id in data.get("amenity_ids", []):
-            amenity = repository.get("Amenity", amenity_id)
-            if amenity:
-                amenities.append(amenity)
+        amenity.update(data)
+        return amenity
+
+
+    # ======================
+    # PLACE METHODS
+    # ======================
+
+    def create_place(self, data):
+        # Vérifie que le owner existe
+        owner = repository.get("User", data["owner_id"])
+        if not owner:
+            raise ValueError("Owner not found")
+
+        # Vérifie que les amenities existent
+        amenity_ids = data.get("amenity_ids", [])
+        for amenity_id in amenity_ids:
+            if not repository.get("Amenity", amenity_id):
+                raise ValueError(f"Amenity {amenity_id} not found")
 
         place = Place(
             title=data["title"],
             price=data["price"],
-            latitude=data["latitude"],
-            longitude=data["longitude"],
-            owner=owner,
-            amenities=amenities
+            owner_id=data["owner_id"],
+            amenity_ids=amenity_ids
         )
 
         repository.add("Place", place)
         return place
 
-
     def get_place(self, place_id):
         return repository.get("Place", place_id)
 
-
     def get_all_places(self):
         return repository.get_all("Place")
-
 
     def update_place(self, place_id, data):
         place = repository.get("Place", place_id)
         if not place:
             return None
 
-        if "price" in data and data["price"] <= 0:
-            raise ValueError("Price must be positive")
+        # Si on change owner → vérifier qu'il existe
+        if "owner_id" in data:
+            if not repository.get("User", data["owner_id"]):
+                raise ValueError("Owner not found")
 
-        if "latitude" in data and not (-90 <= data["latitude"] <= 90):
-            raise ValueError("Invalid latitude")
-
-        if "longitude" in data and not (-180 <= data["longitude"] <= 180):
-            raise ValueError("Invalid longitude")
+        # Si on change amenities → vérifier qu'elles existent
+        if "amenity_ids" in data:
+            for amenity_id in data["amenity_ids"]:
+                if not repository.get("Amenity", amenity_id):
+                    raise ValueError(f"Amenity {amenity_id} not found")
 
         place.update(data)
         return place
-
-from app.models.review import Review
-
-
-    def create_review(self, data):
-        user = repository.get("User", data.get("user_id"))
-        place = repository.get("Place", data.get("place_id"))
-
-        if not user or not place:
-            return None
-
-        review = Review(
-            text=data["text"],
-            user=user,
-            place=place
-        )
-
-        place.reviews.append(review)
-        repository.add("Review", review)
-
-        return review
-
-
-    def get_review(self, review_id):
-        return repository.get("Review", review_id)
-
-
-    def get_all_reviews(self):
-        return repository.get_all("Review")
-
-
-    def update_review(self, review_id, data):
-        review = repository.get("Review", review_id)
-        if not review:
-            return None
-
-        if "text" in data and not data["text"].strip():
-            raise ValueError("Review text cannot be empty")
-
-        review.update(data)
-        return review
-
-
-    def delete_review(self, review_id):
-        review = repository.get("Review", review_id)
-        if not review:
-            return None
-
-        review.place.reviews.remove(review)
-        repository.delete("Review", review_id)
-
-        return True

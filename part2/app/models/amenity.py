@@ -4,16 +4,16 @@ from app.models.base_model import BaseModel
 class Amenity(BaseModel):
     def __init__(self, name):
         super().__init__()
+
+        if not name or not name.strip():
+            raise ValueError("Amenity name cannot be empty")
+
         self.name = name
 
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        if not value or not isinstance(value, str):
-            raise ValueError("name is required and must be a string")
-        if len(value) > 50:
-            raise ValueError("name must not exceed 50 characters")
-        self._name = value
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat()
+        }
