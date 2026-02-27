@@ -1,20 +1,14 @@
 from flask import Blueprint
 from flask_restx import Api
 
-# Création du Blueprint
-api_v1 = Blueprint("api_v1", __name__)
+from app.api.v1.users import api as users_ns
+from app.api.v1.amenities import api as amenities_ns
+from app.api.v1.places import api as places_ns
 
-# Initialisation de l'API RESTx
-api = Api(
-    api_v1,
-    title="HBnB API",
-    version="1.0",
-    description="HBnB Application API - Part 2"
-)
+bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
-# Import des fichiers endpoints
-from app.api.v1 import users
-# Plus tard tu ajouteras :
-# from app.api.v1 import places
-# from app.api.v1 import reviews
-# from app.api.v1 import amenities
+api = Api(bp, title="HBnB API", version="1.0", doc="/")
+
+api.add_namespace(users_ns, path="/users")
+api.add_namespace(amenities_ns, path="/amenities")
+api.add_namespace(places_ns, path="/places")
