@@ -1,4 +1,6 @@
 from app.models.base_model import BaseModel
+from app.extensions import db
+import uuid
 
 
 class Place(BaseModel):
@@ -29,3 +31,19 @@ class Place(BaseModel):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
+
+class Place(db.Model):
+
+    __tablename__ = "places"
+
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
+
+    name = db.Column(db.String(100), nullable=False)
+
+    owner_id = db.Column(
+        db.String,
+        db.ForeignKey("users.id"),
+        nullable=False
+    )
+
+    reviews = db.relationship("Review", backref="place")
