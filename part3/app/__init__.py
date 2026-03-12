@@ -1,10 +1,14 @@
 from flask import Flask
-from app.api.v1 import bp as api_v1_bp
-from config import config
+from app.config import Config
+from app.extensions import db, jwt
 
-
-def create_app(config_name="default"):
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
-    app.register_blueprint(api_v1_bp)
+    app.config.from_object(config_class)
+
+    db.init_app(app)
+    jwt.init_app(app)
+
+    from app.api import register_routes
+    register_routes(app)
     return app
