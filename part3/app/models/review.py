@@ -1,4 +1,6 @@
 from .base_model import BaseModel
+from app.extensions import db
+import uuid
 
 class Review(BaseModel):
     def __init__(self, text, user, place):
@@ -24,3 +26,23 @@ class Review(BaseModel):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
+
+class Review(db.Model):
+
+    __tablename__ = "reviews"
+
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
+
+    text = db.Column(db.String(500), nullable=False)
+
+    user_id = db.Column(
+        db.String,
+        db.ForeignKey("users.id"),
+        nullable=False
+    )
+
+    place_id = db.Column(
+        db.String,
+        db.ForeignKey("places.id"),
+        nullable=False
+    )
