@@ -36,20 +36,20 @@ class ReviewList(Resource):
         current_user = get_jwt_identity()
         data = api.payload
 
-        # If place must exist
+        # Si le logement doit exister
         place = facade.get_place(data['place_id'])
         if not place:
             return {'error': 'Place not found'}, 404
 
-        # Impossible to value your own home
+        # Impossible d'evaluer son logement
         if str(place.owner.id) == str(current_user):
-            return {'error': 'You cannot review your own place.'}, 400  # 1st code required by the instructions
+            return {'error': 'You cannot review your own place.'}, 400
 
-        # Not possible to post a review a 2nd time the same property
+        # pas possible de post une review une 2nd fois si c'est la meme
         if facade.user_already_reviewed(current_user, place.id):
-            return {'error': 'You have already reviewed this place'}, 400  # 2nd code required by the instructions
+            return {'error': 'You have already reviewed this place'}, 400
 
-        # For create review
+        # Créer la review
         review = facade.create_review(current_user, data)
         return review.to_dict(), 201
 
@@ -75,7 +75,7 @@ class ReviewResource(Resource):
     @api.doc(security='Bearer Auth')
     @api.expect(review_update_model, validate=True)
     @api.response(200, 'Review updated successfully')
-    @api.response(403, 'Unauthorized action')  # 3rd code required by the instruction!
+    @api.response(403, 'Unauthorized action')
     @api.response(404, 'Review not found')
     def put(self, review_id):
         """
@@ -91,7 +91,7 @@ class ReviewResource(Resource):
             return {'error': 'Unauthorized action'}, 403
 
         payload = request.get_json()
-        # user_id & place_id must not be altered
+        # user_id & place_id ne doit pas etre altéré
         payload.pop('place_id', None)
         facade.update_review(
             current_user, review_id, payload, is_admin=is_admin)
