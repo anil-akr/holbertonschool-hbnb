@@ -1,5 +1,6 @@
 import unittest
 from app import create_app
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 class TestUserEndpoints(unittest.TestCase):
 
