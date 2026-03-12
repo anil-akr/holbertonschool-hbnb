@@ -1,5 +1,7 @@
 from app.models.base_model import BaseModel
 from flask_bcrypt import generate_password_hash, check_password_hash
+from app.extensions import db
+import uuid
 
 class User(BaseModel):
     def __init__(self, email, first_name, last_name, password):
@@ -37,3 +39,20 @@ class User(BaseModel):
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
         }
+
+class User(db.Model):
+
+    __tablename__ = "users"
+
+    id = db.Column(db.String, primary_key=True, default=lambda: str(uuid.uuid4()))
+
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+    password = db.Column(db.String(128), nullable=False)
+
+    is_admin = db.Column(db.Boolean, default=False)
+
+    places = db.relationship("Place", backref="owner")
